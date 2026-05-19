@@ -1040,39 +1040,29 @@
 
     function renderBoardData() {
         boardGrid.innerHTML = "";
+        boardGrid.className = "grid-masonry";
+        boardGrid.style.maxWidth = "";
+        boardGrid.style.gridTemplateColumns = "";
+
         const wishes = getStoredWishes();
         const count = wishes.length;
         const isMobile = window.innerWidth <= 960;
 
         if (count === 0) {
-            boardGrid.className = "grid-masonry";
             boardGrid.style.gridTemplateColumns = "1fr";
             boardGrid.style.maxWidth = "600px";
             boardGrid.innerHTML = `<div style="text-align: center; color: #a1a1aa; padding: 60px; font-style: italic; font-weight:300;">Belum ada ucapan tersemat di papan galeri.</div>`;
             return;
         }
 
-        boardGrid.classList.remove('allow-scroll');
-
         if (isMobile) {
-            boardGrid.style.maxWidth = "480px";
             boardGrid.style.gridTemplateColumns = "1fr";
+            boardGrid.style.maxWidth = "480px";
             if (count > 3) boardGrid.classList.add('allow-scroll');
         } else {
-            if (count === 1) {
-                boardGrid.style.gridTemplateColumns = "1fr";
-                boardGrid.style.maxWidth = "700px";
-            } else if (count === 2) {
-                boardGrid.style.maxWidth = "1400px";
-                boardGrid.style.gridTemplateColumns = "repeat(2, 1fr)";
-            } else if (count === 3) {
-                boardGrid.style.maxWidth = "1400px";
-                boardGrid.style.gridTemplateColumns = "repeat(3, 1fr)";
-            } else {
-                boardGrid.classList.add('allow-scroll');
-                boardGrid.style.maxWidth = "1400px";
-                boardGrid.style.gridTemplateColumns = "repeat(3, 1fr)";
-            }
+            boardGrid.style.gridTemplateColumns = count === 1 ? "1fr" : "repeat(3, 1fr)";
+            boardGrid.style.maxWidth = count === 1 ? "700px" : "1400px";
+            if (count > 3) boardGrid.classList.add('allow-scroll');
         }
 
         wishes.forEach(data => {

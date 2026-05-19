@@ -196,42 +196,40 @@
             padding: 0;
         }
 
-        /* --- SCREEN 3: HIGH-END CONTEMPORARY GALLERY BOARD --- */
+        /* --- SCREEN 3: GALLERY BOARD — RESPONSIVE FULLSCREEN --- */
+        #screen-board.screen { padding: var(--safe-top) 16px var(--safe-bottom) 16px; }
         .board-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
-        .board-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin: 0 auto 20px auto; padding: 0 8px; flex-shrink: 0; }
-        
-        /* Layout Grid Context */
+        .board-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin: 0 auto 12px auto; padding: 0 4px; flex-shrink: 0; }
+
         .grid-masonry { 
-            width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 8px 24px 8px;
-            display: grid; gap: 20px; overflow-y: hidden; align-content: start;
-        }
-        
-        .grid-masonry.allow-scroll {
-            overflow-y: auto; max-height: calc(100vh - 160px);
+            width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 4px 24px;
+            display: grid; gap: 20px; align-content: start;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            overflow-y: auto; max-height: calc(100vh - 130px);
             scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
-        .grid-masonry.allow-scroll::-webkit-scrollbar { width: 4px; }
-        .grid-masonry.allow-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        .grid-masonry::-webkit-scrollbar { width: 4px; }
+        .grid-masonry::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         
-        /* Premium Card Frame Layout */
         .wish-card { 
-            background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 18px; 
-            padding: 14px; display: flex; flex-direction: column; gap: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02); cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+            background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 16px; 
+            padding: 12px; display: flex; flex-direction: column; gap: 10px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.03); cursor: pointer;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
         }
-        .wish-card:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.06); }
-        body.dark-theme .wish-card { box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .wish-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(0,0,0,0.06); }
+        body.dark-theme .wish-card { box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
         
-        .wish-canvas-img { width: 100%; height: auto; background: #fcfcfd; border-radius: 12px; display: block; border: 1px solid var(--border-color); }
+        .wish-canvas-img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; background: var(--bg-color); border-radius: 10px; display: block; border: 1px solid var(--border-color); }
         body.dark-theme .wish-canvas-img { background: #141416; }
         
-        .wish-footer { display: flex; flex-direction: column; gap: 4px; padding: 2px 4px; }
-        .wish-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-        .sender-name { font-weight: 600; font-size: 0.9rem; color: var(--text-color); letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-        .timestamp-box { font-size: 0.7rem; color: #71717a; font-weight: 400; text-align: right; flex-shrink: 0; line-height: 1.3; }
+        .wish-footer { display: flex; flex-direction: column; gap: 4px; padding: 8px 4px 2px; }
+        .wish-meta-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .sender-name { font-weight: 600; font-size: 0.95rem; color: var(--text-color); letter-spacing: -0.01em; }
+        .timestamp-box { font-size: 0.75rem; color: #52525b; font-weight: 500; text-align: right; flex-shrink: 0; line-height: 1.4; white-space: nowrap; }
         body.dark-theme .timestamp-box { color: #a1a1aa; }
-        .label-from { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a1a1aa; font-weight: 500; }
+        .label-from { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #a1a1aa; font-weight: 600; }
+        body.dark-theme .label-from { color: #a1a1aa; }
 
         /* --- PRESTIGE LIGHTBOX MODAL POPUP --- */
         .modal-overlay {
@@ -1040,29 +1038,11 @@
 
     function renderBoardData() {
         boardGrid.innerHTML = "";
-        boardGrid.className = "grid-masonry";
-        boardGrid.style.maxWidth = "";
-        boardGrid.style.gridTemplateColumns = "";
-
         const wishes = getStoredWishes();
-        const count = wishes.length;
-        const isMobile = window.innerWidth <= 960;
 
-        if (count === 0) {
-            boardGrid.style.gridTemplateColumns = "1fr";
-            boardGrid.style.maxWidth = "600px";
-            boardGrid.innerHTML = `<div style="text-align: center; color: #a1a1aa; padding: 60px; font-style: italic; font-weight:300;">Belum ada ucapan tersemat di papan galeri.</div>`;
+        if (wishes.length === 0) {
+            boardGrid.innerHTML = `<div style="text-align: center; color: #a1a1aa; padding: 60px 20px; font-style: italic; font-weight:300;">Belum ada ucapan tersemat di papan galeri.</div>`;
             return;
-        }
-
-        if (isMobile) {
-            boardGrid.style.gridTemplateColumns = "1fr";
-            boardGrid.style.maxWidth = "480px";
-            if (count > 3) boardGrid.classList.add('allow-scroll');
-        } else {
-            boardGrid.style.gridTemplateColumns = count === 1 ? "1fr" : "repeat(3, 1fr)";
-            boardGrid.style.maxWidth = count === 1 ? "700px" : "1400px";
-            if (count > 3) boardGrid.classList.add('allow-scroll');
         }
 
         wishes.forEach(data => {
@@ -1076,7 +1056,7 @@
                         <span class="sender-name">${escapeHTML(data.name)}</span>
                         <div class="timestamp-box">
                             <div>${data.date}</div>
-                            <div style="opacity: 0.6; font-size:0.65rem; margin-top:1px;">Pukul ${data.time}</div>
+                            <div style="opacity: 0.7; font-size:0.7rem; margin-top:1px;">Pukul ${data.time}</div>
                         </div>
                     </div>
                 </div>
@@ -1092,7 +1072,7 @@
     function openLightboxPopup(data) {
         modalImage.src = data.image;
         modalName.innerText = data.name;
-        modalTime.innerHTML = `<div>${data.date}</div><div style="opacity:0.6; font-size:0.68rem; margin-top:2px;">Pukul ${data.time}</div>`;
+        modalTime.innerHTML = `<div>${data.date}</div><div style="opacity:0.7; font-size:0.7rem; margin-top:2px;">Pukul ${data.time}</div>`;
         // ✅ FIX: Set display dulu, lalu trigger animasi via class
         lightboxModal.style.display = 'flex';
         // Force reflow agar transition berjalan

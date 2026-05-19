@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>The Wedding - Guestbook & Sketch</title>
     <style>
         :root {
@@ -13,7 +13,8 @@
             --text-color: #18181b;
             --border-color: rgba(0, 0, 0, 0.08);
             --frame-color: rgba(24, 24, 27, 0.2);
-            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-top: env(safe-area-inset-top, 24px);
+            --safe-bottom: env(safe-area-inset-bottom, 24px);
         }
 
         body.dark-theme {
@@ -50,7 +51,7 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column;
-            padding: 24px; z-index: 5; opacity: 0;
+            padding: var(--safe-top) 24px var(--safe-bottom) 24px; z-index: 5; opacity: 0;
             transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -65,9 +66,9 @@
             -webkit-backdrop-filter: blur(30px);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 48px 40px;
+            padding: 40px 32px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
-            width: 100%; max-width: 480px; text-align: center;
+            width: 100%; max-width: 440px; text-align: center;
         }
 
         body.dark-theme .glass-card {
@@ -80,8 +81,8 @@
             letter-spacing: 0.03em;
         }
 
-        .screen-title { font-size: 2.4rem; margin-bottom: 6px; }
-        .screen-subtitle { color: #71717a; font-size: 0.9rem; margin-bottom: 32px; font-weight: 300; letter-spacing: 0.05em; }
+        .screen-title { font-size: 2.2rem; margin-bottom: 6px; }
+        .screen-subtitle { color: #71717a; font-size: 0.85rem; margin-bottom: 32px; font-weight: 300; letter-spacing: 0.05em; line-height: 1.4; }
         body.dark-theme .screen-subtitle { color: #a1a1aa; }
 
         label {
@@ -94,6 +95,7 @@
             border: 1px solid var(--border-color); border-radius: 10px;
             padding: 14px 16px; color: var(--text-color); font-size: 0.95rem; outline: none;
             transition: border-color 0.2s;
+            -webkit-appearance: none;
         }
         body.dark-theme input[type="text"] { background: rgba(255, 255, 255, 0.03); }
         input[type="text"]:focus { border-color: var(--text-color); }
@@ -101,10 +103,10 @@
         /* Buttons Styling */
         button {
             background: var(--accent-color); border: 1px solid var(--accent-color); color: var(--bg-color);
-            padding: 14px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 500;
-            cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px 20px; border-radius: 10px; font-size: 0.85rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
-        button:active { transform: scale(0.99); }
+        button:active { transform: scale(0.98); }
         
         .btn-secondary {
             background: transparent; border: 1px solid var(--border-color); color: var(--text-color);
@@ -112,15 +114,17 @@
         .btn-secondary:hover { background: rgba(0,0,0,0.02); }
         body.dark-theme .btn-secondary:hover { background: rgba(255,255,255,0.03); }
 
-        /* --- SCREEN 2: MAIN WORKSPACE --- */
+        /* --- SCREEN 2: WORKSPACE MOBILE OPTIMIZED LAYOUT --- */
         .workspace-layout {
-            display: grid; grid-template-columns: 290px 1fr; width: 100%; height: 100%; gap: 20px; z-index: 5;
+            display: grid; grid-template-columns: 290px 1fr; width: 100%; height: 100%; gap: 20px; z-index: 5; position: relative;
         }
 
+        /* Sidebar Engine with Desktop & Mobile Sliding State Support */
         .sidebar {
-            background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: var(--panel-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--border-color); border-radius: 20px; padding: 20px;
             display: flex; flex-direction: column; gap: 20px; overflow-y: auto;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
         }
         .sidebar::-webkit-scrollbar { width: 3px; }
         .sidebar::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
@@ -130,7 +134,7 @@
         .section:last-child { border-bottom: none; }
 
         .style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-        .style-grid button { padding: 8px; font-size: 0.75rem; border-radius: 8px; }
+        .style-grid button { padding: 8px; font-size: 0.72rem; border-radius: 8px; }
 
         /* Color Management Architecture */
         .color-main-row { display: flex; gap: 8px; align-items: center; }
@@ -145,123 +149,106 @@
         input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: var(--border-color); border-radius: 2px; outline: none; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--text-color); cursor: pointer; }
 
-        /* Selector Container Panels */
+        /* Selector Panels */
         .selector-box { background: rgba(0,0,0,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px; max-height: 110px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         body.dark-theme .selector-box { background: rgba(255,255,255,0.01); }
         .selector-item { font-size: 0.75rem; padding: 8px; cursor: pointer; border-radius: 6px; transition: all 0.2s; text-align: left; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
         .selector-item:hover, .selector-item.active { background: var(--accent-color); color: var(--bg-color); }
 
-        /* Canvas Display Context */
+        /* Canvas Displays Context */
         .canvas-area { position: relative; width: 100%; height: 100%; background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; }
         body.dark-theme .canvas-area { background: #141416; }
         #canvas-container { position: absolute; inset: 0; z-index: 1; }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
         
-        /* Modern Fine Line Frames Decoration Layer */
         .frame-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; border: 0px solid transparent; transition: all 0.3s ease; }
         
-        /* Top Navigation Overlay Header */
-        .top-action-bar { position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; background: var(--panel-bg); border: 1px solid var(--border-color); padding: 6px; border-radius: 12px; backdrop-filter: blur(10px); }
-        .top-action-bar button { padding: 8px 14px; font-size: 0.75rem; border-radius: 8px; }
+        /* Top Navigation Header Context Bar */
+        .top-action-bar { 
+            position: absolute; top: 16px; left: 16px; right: 16px; z-index: 10; 
+            display: flex; gap: 6px; background: var(--panel-bg); border: 1px solid var(--border-color); 
+            padding: 6px; border-radius: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            align-items: center; justify-content: space-between;
+        }
+        .top-action-bar .action-group { display: flex; gap: 6px; }
+        .top-action-bar button { padding: 8px 12px; font-size: 0.75rem; border-radius: 8px; }
+
+        /* Responsive Mobile Burger Trigger */
+        .burger-menu-trigger {
+            display: none; background: var(--accent-color); color: var(--bg-color);
+            border: none; border-radius: 8px; width: 34px; height: 34px;
+            align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; padding: 0;
+        }
 
         /* --- SCREEN 3: HIGH-END CONTEMPORARY GALLERY BOARD --- */
-        .board-container { width: 100%; height: 100%; display: flex; flex-direction: column; padding-top: calc(12px + var(--safe-top)); z-index: 5;}
-        .board-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin: 0 auto 24px auto; padding: 0 16px; flex-shrink: 0; }
+        .board-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .board-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin: 0 auto 20px auto; padding: 0 8px; flex-shrink: 0; }
         
-        /* Master Grid Container Layout */
+        /* Layout Grid Context */
         .grid-masonry { 
-            width: 100%; 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 0 16px 40px 16px;
-            display: grid; 
-            gap: 24px;
-            overflow-y: hidden;
-            align-content: start;
+            width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 8px 24px 8px;
+            display: grid; gap: 20px; overflow-y: hidden; align-content: start;
         }
         
-        /* Scroll State Engine Triggered when items > 3 */
         .grid-masonry.allow-scroll {
-            overflow-y: auto;
-            max-height: calc(100vh - 150px);
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+            overflow-y: auto; max-height: calc(100vh - 160px);
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
         .grid-masonry.allow-scroll::-webkit-scrollbar { width: 4px; }
         .grid-masonry.allow-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         
-        /* Adaptive Premium Clickable Wedding Card Frame */
+        /* Premium Card Frame Layout */
         .wish-card { 
-            background: var(--panel-bg); 
-            border: 1px solid var(--border-color); 
-            border-radius: 18px; 
-            padding: 16px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 14px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-            cursor: pointer;
+            background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 18px; 
+            padding: 14px; display: flex; flex-direction: column; gap: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); cursor: pointer;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
         }
-        .wish-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 36px rgba(0,0,0,0.06);
-        }
+        .wish-card:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.06); }
         body.dark-theme .wish-card { box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
-        body.dark-theme .wish-card:hover { box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
         
-        .wish-canvas-img { 
-            width: 100%; 
-            height: auto;
-            background: #fcfcfd; 
-            border-radius: 12px; 
-            display: block; 
-            border: 1px solid var(--border-color); 
-        }
+        .wish-canvas-img { width: 100%; height: auto; background: #fcfcfd; border-radius: 12px; display: block; border: 1px solid var(--border-color); }
         body.dark-theme .wish-canvas-img { background: #141416; }
         
-        /* Meta Typography Context */
         .wish-footer { display: flex; flex-direction: column; gap: 4px; padding: 2px 4px; }
-        .wish-meta-row { display: flex; justify-content: space-between; align-items: center; }
-        .sender-name { font-weight: 600; font-size: 0.95rem; color: var(--text-color); letter-spacing: -0.01em; }
-        .timestamp-box { font-size: 0.72rem; color: #71717a; font-weight: 400; text-align: right; line-height: 1.3; }
+        .wish-meta-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .sender-name { font-weight: 600; font-size: 0.9rem; color: var(--text-color); letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .timestamp-box { font-size: 0.7rem; color: #71717a; font-weight: 400; text-align: right; flex-shrink: 0; line-height: 1.3; }
         body.dark-theme .timestamp-box { color: #a1a1aa; }
-        .label-from { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a1a1aa; font-weight: 500; }
-        body.dark-theme .label-from { color: #52525b; }
+        .label-from { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a1a1aa; font-weight: 500; }
 
         /* --- PRESTIGE LIGHTBOX MODAL POPUP --- */
         .modal-overlay {
-            position: fixed; inset: 0; 
-            background: rgba(13, 13, 15, 0.4);
+            position: fixed; inset: 0; background: rgba(13, 13, 15, 0.4);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            z-index: 100; display: none; justify-content: center; align-items: center; padding: 24px;
+            z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px;
             opacity: 0; transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .modal-overlay.active { display: flex; opacity: 1; }
         
         .modal-wrapper {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 24px; width: 100%; max-width: 680px;
-            padding: 24px; box-shadow: 0 30px 70px rgba(0,0,0,0.15);
-            position: relative; display: flex; flex-direction: column; gap: 20px;
+            background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 24px; 
+            width: 100%; max-width: 600px; padding: 20px; box-shadow: 0 30px 70px rgba(0,0,0,0.15);
+            position: relative; display: flex; flex-direction: column; gap: 16px;
             transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .modal-overlay.active .modal-wrapper { transform: scale(1); }
-        body.dark-theme .modal-wrapper { box-shadow: 0 40px 90px rgba(0,0,0,0.6); background: #121214; }
+        body.dark-theme .modal-wrapper { background: #121214; }
 
         .modal-close-btn {
-            position: absolute; top: 18px; right: 20px;
-            background: none; border: none; font-size: 1.8rem; color: var(--text-color);
-            cursor: pointer; opacity: 0.5; transition: opacity 0.2s; padding: 4px; line-height: 1;
+            position: absolute; top: 14px; right: 16px; background: none; border: none; 
+            font-size: 1.8rem; color: var(--text-color); cursor: pointer; opacity: 0.5; z-index: 5;
         }
         .modal-close-btn:hover { opacity: 1; }
-        
-        .modal-img-frame {
-            width: 100%; height: auto; border-radius: 14px;
-            border: 1px solid var(--border-color); background: #ffffff; display: block;
-        }
+        .modal-img-frame { width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--border-color); background: #ffffff; display: block; }
         body.dark-theme .modal-img-frame { background: #141416; }
+
+        /* Mobile Sidebar Backdrop Darkener Layer */
+        .sidebar-backdrop {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: 80;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .sidebar-backdrop.active { display: block; opacity: 1; }
 
         /* Frame Templates SVG Embedded Engine */
         .f-fine-gallery { border: 24px solid transparent; border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect x='4' y='4' width='92' height='92' fill='none' stroke='%2318181b' stroke-width='1'/%3E%3Crect x='8' y='8' width='84' height='84' fill='none' stroke='%2318181b' stroke-width='0.5' opacity='0.4'/%3E%3C/svg%3E") 24 repeat; }
@@ -272,20 +259,37 @@
         body.dark-theme .f-modern-botanical { border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M10 20 Q 20 10, 30 20 M90 20 Q 80 10, 70 20 M10 80 Q 20 90, 30 80 M90 80 Q 80 90, 70 80' fill='none' stroke='%23fafafa' stroke-width='1.5'/%3E%3Crect x='12' y='12' width='76' height='76' fill='none' stroke='%23fafafa' stroke-width='0.5' stroke-dasharray='3,3'/%3E%3C/svg%3E") 28 repeat; }
         body.dark-theme .f-minimal-line { border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cpath d='M15 5 H85 M95 15 V85 M85 95 H15 M5 85 V15' fill='none' stroke='%23fafafa' stroke-width='1'/%3E%3C/svg%3E") 16 repeat; }
 
-        @media (max-width: 900px) {
-            .workspace-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: calc(100vh - 40px); }
-            .sidebar { max-height: 200px; padding: 14px; }
-            .top-action-bar { position: relative; top: 0; right: 0; margin-bottom: 8px; width: 100%; justify-content: flex-end; }
+        /* --- 📱 EXCLUSIVE RESPONSIVE DYNAMIC MEDIA QUERIES --- */
+        @media (max-width: 960px) {
+            .workspace-layout { grid-template-columns: 1fr; }
+            
+            /* Sembunyikan sidebar ke kiri luar layar (Mobile State) */
+            .sidebar { 
+                position: fixed; top: 0; left: 0; bottom: 0; width: 280px; 
+                z-index: 90; border-radius: 0 20px 20px 0; border-left: none;
+                transform: translateX(-100%); opacity: 0;
+            }
+            .sidebar.mobile-open { transform: translateX(0); opacity: 1; }
+            .burger-menu-trigger { display: flex; }
+
+            /* Penyesuaian teks tombol agar muat di area bar atas mobile */
+            .top-action-bar button { padding: 8px 10px; font-size: 0.7rem; }
+            .btn-text-hide { display: none; } /* Sembunyikan emoji/teks panjang di HP */
+            
+            .screen-title { font-size: 1.8rem; }
+            .board-header h1 { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body class="light-theme">
 
-    <div id="screen-form" class="screen active" style="justify-content: center; align-items: center;">
+    <div id="sidebar-overlay-backdrop" class="sidebar-backdrop"></div>
+
+    <div id="screen-form" class="screen" style="justify-content: center; align-items: center;">
         <div class="glass-card">
-            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.6; display:block; margin-bottom: 12px;">The Wedding Celebration</span>
+            <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.6; display:block; margin-bottom: 10px;">The Wedding Celebration</span>
             <h1 class="screen-title">Wishes & Guestbook</h1>
-            <p class="screen-subtitle">Lembar digital Coreta & Doa Tulus dari Tamu Terhormat</p>
+            <p class="screen-subtitle">Lembar digital Coretan & Doa Tulus dari Tamu Terhormat</p>
             
             <div style="text-align: left; margin-bottom: 24px;">
                 <label for="guest-name">Nama Lengkap Tamu</label>
@@ -303,7 +307,8 @@
 
     <div id="screen-sketch" class="screen">
         <div class="workspace-layout">
-            <div class="sidebar">
+            
+            <div id="app-sidebar" class="sidebar">
                 <div>
                     <h2 id="current-guest-label" class="serif-font" style="font-size: 1.3rem; margin-bottom: 2px;">Guest Canvas</h2>
                     <span style="font-size: 0.75rem; color: #71717a;">Goreskan tanda tangan atau ucapan indah Anda</span>
@@ -312,13 +317,13 @@
                 <div class="section">
                     <h3>Brush Style Engine</h3>
                     <div class="style-grid">
-                        <button class="style-btn active" data-style="neon">✨ Neon Glow</button>
-                        <button class="style-btn" data-style="pen">✒️ Classic Pen</button>
-                        <button class="style-btn" data-style="calligraphy">🖋️ Calligraphy</button>
-                        <button class="style-btn" data-style="pencil">✏️ Soft Pencil</button>
-                        <button class="style-btn" data-style="textured">🎨 Oil Texture</button>
-                        <button class="style-btn" data-style="highlighter">🖍️ Highlighter</button>
-                        <button class="style-btn" data-style="sketch">🕸️ Web Sketch</button>
+                        <button class="style-btn active" data-style="neon">✨ Neon</button>
+                        <button class="style-btn" data-style="pen">✒️ Pen</button>
+                        <button class="style-btn" data-style="calligraphy">🖋️ Callig</button>
+                        <button class="style-btn" data-style="pencil">✏️ Pencil</button>
+                        <button class="style-btn" data-style="textured">🎨 Oil</button>
+                        <button class="style-btn" data-style="highlighter">🖍️ High</button>
+                        <button class="style-btn" data-style="sketch">🕸️ Web</button>
                     </div>
                 </div>
 
@@ -368,19 +373,26 @@
 
                 <div class="section">
                     <div class="action-row" style="display:flex; gap: 6px;">
-                        <button id="btn-draw" class="active" style="flex:1;">✏️ Mode Gambar</button>
-                        <button id="btn-erase" class="btn-secondary" style="flex:1;">🧽 Penghapus</button>
+                        <button id="btn-draw" class="active" style="flex:1;">✏️ Draw</button>
+                        <button id="btn-erase" class="btn-secondary" style="flex:1;">🧽 Erase</button>
                     </div>
                 </div>
             </div>
 
             <div class="canvas-area">
                 <div class="top-action-bar">
-                    <button id="btn-undo" class="btn-secondary">↶ Undo</button>
-                    <button id="btn-redo" class="btn-secondary">↷ Redo</button>
-                    <button id="btn-clear" class="btn-secondary" style="color:#ef4444;">🗑️ Reset</button>
-                    <button id="btn-abort" class="btn-secondary">Kembali</button>
-                    <button id="btn-submit">Sematkan ke Papan Ucapan 🚀</button>
+                    <button id="mobile-burger-btn" class="burger-menu-trigger">☰</button>
+                    
+                    <div class="action-group">
+                        <button id="btn-undo" class="btn-secondary">↶ <span class="btn-text-hide">Undo</span></button>
+                        <button id="btn-redo" class="btn-secondary">↷ <span class="btn-text-hide">Redo</span></button>
+                        <button id="btn-clear" class="btn-secondary" style="color:#ef4444;">🗑️ <span class="btn-text-hide">Reset</span></button>
+                    </div>
+                    
+                    <div class="action-group">
+                        <button id="btn-abort" class="btn-secondary">Batal</button>
+                        <button id="btn-submit">Kirim 🚀</button>
+                    </div>
                 </div>
                 <div id="canvas-frame-layer" class="frame-overlay"></div>
                 <div id="canvas-container">
@@ -394,12 +406,12 @@
         <div class="board-container">
             <div class="board-header">
                 <div>
-                    <h1 style="font-size: 2.2rem;" class="serif-font">The Wedding Gallery Board</h1>
-                    <p style="margin-bottom: 0; font-size: 0.85rem; color:#71717a;">Kumpulan coretan ekspresi dan untaian doa tulus dari para tamu</p>
+                    <h1 class="serif-font">Gallery Board</h1>
+                    <p style="margin-bottom: 0; font-size: 0.75rem; color:#71717a;" class="btn-text-hide">Kumpulan ekspresi dan doa tulus para tamu</p>
                 </div>
-                <div style="display:flex; gap: 8px;">
-                    <button id="btn-toggle-theme" class="btn-secondary">🌗 Mode Warna</button>
-                    <button id="btn-back-to-form">➕ Isi Ucapan Baru</button>
+                <div style="display:flex; gap: 6px;">
+                    <button id="btn-toggle-theme" class="btn-secondary">🌗 <span class="btn-text-hide">Tema</span></button>
+                    <button id="btn-back-to-form">➕ <span class="btn-text-hide">Isi Baru</span></button>
                 </div>
             </div>
 
@@ -416,8 +428,8 @@
             <div class="wish-footer" style="padding: 0 4px;">
                 <span class="label-from">Dari Tamu Terhormat</span>
                 <div class="wish-meta-row" style="margin-top: 2px;">
-                    <span id="modal-name-target" class="serif-font" style="font-size: 1.4rem; font-weight: 500;">Nama Tamu</span>
-                    <div id="modal-time-target" class="timestamp-box" style="font-size: 0.75rem;">Tanggal & Waktu</div>
+                    <span id="modal-name-target" class="serif-font" style="font-size: 1.2rem; font-weight: 500;">Nama Tamu</span>
+                    <div id="modal-time-target" class="timestamp-box" style="font-size: 0.7rem;">Tanggal & Waktu</div>
                 </div>
             </div>
         </div>
@@ -430,6 +442,9 @@
             board: document.getElementById('screen-board')
         };
 
+        // Screen states configuration initialization load
+        screens.form.classList.add('active');
+
         let currentGuestName = ""; let isDrawing = false; let points = [];
         let currentStyle = 'neon'; let currentColor = '#18181b'; let currentSize = 8; let currentOpacity = 1;
         let isEraser = false; let activeFrameStyle = 'none';
@@ -439,6 +454,11 @@
         const canvas = document.getElementById('paintCanvas'); const ctx = canvas.getContext('2d');
         const container = document.getElementById('canvas-container'); const frameLayer = document.getElementById('canvas-frame-layer');
 
+        // MOBILE SIDEBAR TRIGGERS DECLARATION
+        const mobileBurgerBtn = document.getElementById('mobile-burger-btn');
+        const appSidebar = document.getElementById('app-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-overlay-backdrop');
+
         // MODAL OBJECTS DECLARATION
         const lightboxModal = document.getElementById('wish-lightbox-modal');
         const modalImage = document.getElementById('modal-image-target');
@@ -446,13 +466,35 @@
         const modalTime = document.getElementById('modal-time-target');
 
         function changeScreen(targetScreen) {
+            closeMobileSidebar();
             Object.values(screens).forEach(s => s.classList.remove('active'));
             screens[targetScreen].classList.add('active');
-            if(targetScreen === 'sketch') initCanvasSize();
+            if(targetScreen === 'sketch') setTimeout(initCanvasSize, 50); // Safe delay rendering context wrapper size
             if(targetScreen === 'board') renderBoardData();
         }
 
-        // INTERACTIVE NAVIGATION
+        // --- MOBILE BURGER SIDEBAR LOGIC CONTROLLER SYSTEM ---
+        function openMobileSidebar() {
+            appSidebar.classList.add('mobile-open');
+            sidebarBackdrop.classList.add('active');
+        }
+        function closeMobileSidebar() {
+            appSidebar.classList.remove('mobile-open');
+            sidebarBackdrop.classList.remove('active');
+        }
+        mobileBurgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if(appSidebar.classList.contains('mobile-open')) closeMobileSidebar(); else openMobileSidebar();
+        });
+        sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+        appSidebar.addEventListener('click', (e) => {
+            // Close dynamic sidebar if selecting layout assets items under mobile view context
+            if(e.target.classList.contains('selector-item') || e.target.classList.contains('style-btn')) {
+                if(window.innerWidth <= 960) closeMobileSidebar();
+            }
+        });
+
+        // INTERACTIVE NAVIGATION INTERACTION BINDINGS
         document.getElementById('btn-start-sketch').addEventListener('click', () => {
             const nameInput = document.getElementById('guest-name').value.trim();
             if(!nameInput) { alert('Mohon masukkan nama Anda terlebih dahulu.'); return; }
@@ -470,7 +512,7 @@
             document.getElementById('color-picker').value = isDark ? '#fafafa' : '#18181b';
         });
 
-        // CANVAS ENGINE STRUCT
+        // CANVAS VECTOR ENGINE CORE SYSTEM
         function initCanvasSize() {
             const rect = container.getBoundingClientRect();
             canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
@@ -478,6 +520,11 @@
             ctx.scale(dpr, dpr); ctx.clearRect(0, 0, rect.width, rect.height);
             historyStack = []; redoStack = [];
         }
+
+        // Listen for screen orientation change / desktop resize fluid layouts adjustment
+        window.addEventListener('resize', () => {
+            if(screens.sketch.classList.contains('active')) initCanvasSize();
+        });
 
         function getCoordinates(e) {
             let clientX, clientY;
@@ -512,7 +559,7 @@
             canvas.addEventListener('pointerdown', startDrawing); canvas.addEventListener('pointermove', draw); canvas.addEventListener('pointerup', stopDrawing);
         } else {
             canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing);
+            canvas.addEventListener('touchstart', startDrawing, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', stopDrawing);
         }
 
         function applyVectorBrushEngine(p1, p2, speed) {
@@ -650,13 +697,14 @@
             changeScreen('board');
         });
 
-        // --- CORE LOGIC: BOARD RENDERING WITH CLICKABLE LIGHTBOX SYSTEM ---
+        // --- CORE LOGIC: DYNAMIC ADAPTIVE RESPONSIVE BOARD GALLERY GRID SYSTEM ---
         const boardGrid = document.getElementById('board-grid');
         
         function renderBoardData() {
             boardGrid.innerHTML = "";
             const wishes = JSON.parse(localStorage.getItem('clean_wedding_wishes')) || [];
             const count = wishes.length;
+            const isMobile = window.innerWidth <= 960;
 
             if(count === 0) {
                 boardGrid.className = "grid-masonry";
@@ -668,33 +716,29 @@
 
             boardGrid.classList.remove('allow-scroll');
 
-            // --- CONDITIONS MATRIX LAYOUT ---
-            if (count === 1) {
-                boardGrid.className = "grid-masonry";
+            // --- MOBILE VS DESKTOP GRID CONDITION MATRIX ---
+            if (isMobile) {
+                // Di Handphone: Semua digeber 1 kolom ke bawah agar coretan gambar tetap terbaca jelas
+                boardGrid.style.maxWidth = "480px";
                 boardGrid.style.gridTemplateColumns = "1fr";
-                boardGrid.style.maxWidth = "700px"; 
-            } else if (count === 2) {
-                boardGrid.className = "grid-masonry";
-                boardGrid.style.maxWidth = "1400px";
-                boardGrid.style.gridTemplateColumns = "repeat(2, 1fr)";
-            } else if (count === 3) {
-                boardGrid.className = "grid-masonry";
-                boardGrid.style.maxWidth = "1400px";
-                boardGrid.style.gridTemplateColumns = "repeat(3, 1fr)";
+                if(count > 3) boardGrid.classList.add('allow-scroll');
             } else {
-                boardGrid.className = "grid-masonry allow-scroll";
-                boardGrid.style.maxWidth = "1400px";
-                boardGrid.style.gridTemplateColumns = "repeat(3, 1fr)";
+                // Di Desktop: Aturan proporsional 1, 2, atau 3 kolom berjalan
+                if (count === 1) {
+                    boardGrid.style.gridTemplateColumns = "1fr"; boardGrid.style.maxWidth = "700px"; 
+                } else if (count === 2) {
+                    boardGrid.style.maxWidth = "1400px"; boardGrid.style.gridTemplateColumns = "repeat(2, 1fr)";
+                } else if (count === 3) {
+                    boardGrid.style.maxWidth = "1400px"; boardGrid.style.gridTemplateColumns = "repeat(3, 1fr)";
+                } else {
+                    boardGrid.classList.add('allow-scroll');
+                    boardGrid.style.maxWidth = "1400px"; boardGrid.style.gridTemplateColumns = "repeat(3, 1fr)";
+                }
             }
 
-            // Render Node Object Cards Context
+            // Node object rendering context loop
             wishes.forEach(data => {
-                const card = document.createElement('div'); 
-                card.className = 'wish-card';
-                
-                // DATASET BINDING FOR MODAL POPUP ENGINE
-                card.setAttribute('data-target-id', data.id);
-
+                const card = document.createElement('div'); card.className = 'wish-card';
                 card.innerHTML = `
                     <img src="${data.image}" class="wish-canvas-img" alt="Wedding Guest Wish">
                     <div class="wish-footer">
@@ -703,45 +747,32 @@
                             <span class="sender-name">${escapeHTML(data.name)}</span>
                             <div class="timestamp-box">
                                 <div>${data.date}</div>
-                                <div style="opacity: 0.6; font-size:0.68rem; margin-top:1px;">Pukul ${data.time}</div>
+                                <div style="opacity: 0.6; font-size:0.65rem; margin-top:1px;">Pukul ${data.time}</div>
                             </div>
                         </div>
                     </div>
                 `;
-
-                // INTERACTIVE EVENT: TRIGGER OPEN POP-UP
                 card.addEventListener('click', () => openLightboxPopup(data));
-
                 boardGrid.appendChild(card);
             });
         }
 
-        // --- LIGHTBOX INTERACTIVE CONTROL UTILITIES ---
+        // --- LIGHTBOX CONTROLS ---
         function openLightboxPopup(data) {
             modalImage.src = data.image;
             modalName.innerText = data.name;
-            modalTime.innerHTML = `<div>${data.date}</div><div style="opacity:0.6; font-size:0.7rem; margin-top:2px;">Pukul ${data.time}</div>`;
-            
+            modalTime.innerHTML = `<div>${data.date}</div><div style="opacity:0.6; font-size:0.68rem; margin-top:2px;">Pukul ${data.time}</div>`;
             lightboxModal.style.display = 'flex';
-            // Trigger reflow for CSS opacity animation scale transitions
             setTimeout(() => lightboxModal.classList.add('active'), 10);
         }
 
         function closeLightboxPopup() {
             lightboxModal.classList.remove('active');
-            setTimeout(() => {
-                lightboxModal.style.display = 'none';
-                modalImage.src = ""; // Clear buffer data memory
-            }, 300);
+            setTimeout(() => { lightboxModal.style.display = 'none'; modalImage.src = ""; }, 300);
         }
 
-        // CLOSE TRIGGERS BINDINGS
         document.getElementById('modal-close-trigger').addEventListener('click', closeLightboxPopup);
-        
-        // Close modal when user clicks outside the content paper background
-        lightboxModal.addEventListener('click', (e) => {
-            if (e.target === lightboxModal) closeLightboxPopup();
-        });
+        lightboxModal.addEventListener('click', (e) => { if (e.target === lightboxModal) closeLightboxPopup(); });
 
         function escapeHTML(str) { return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t)); }
     </script>

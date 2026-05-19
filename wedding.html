@@ -158,8 +158,8 @@
         /* Canvas Displays Context */
         .canvas-area { position: relative; width: 100%; height: 100%; background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; }
         body.dark-theme .canvas-area { background: #141416; }
-        #canvas-container { position: absolute; inset: 0; z-index: 1; }
-        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+        #canvas-container { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; }
+        canvas { display: block; cursor: crosshair; touch-action: none; }
         
         .frame-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; border: 0px solid transparent; transition: all 0.3s ease; }
         
@@ -526,7 +526,6 @@
     let isEraser = false; let activeFrameStyle = 'none';
 
     let historyStack = []; let redoStack = []; const MAX_HISTORY = 20;
-    const dpr = window.devicePixelRatio || 1;
 
     const canvas = document.getElementById('paintCanvas');
     const ctx = canvas.getContext('2d');
@@ -596,46 +595,36 @@
     });
 
     // =============================================
-    // CANVAS ENGINE — FIXED: preserve content on resize
+    // CANVAS ENGINE — Fixed 1920x1080 16:9
     // =============================================
-    function initCanvasSize(preserveContent) {
+    function initCanvasSize() {
         const rect = container.getBoundingClientRect();
-        const newW = rect.width * dpr;
-        const newH = rect.height * dpr;
+        const ratio = 1920 / 1080;
 
-        // ✅ FIX #1: Simpan gambar sebelum resize
-        let savedImage = null;
-        if (preserveContent && canvas.width > 0 && canvas.height > 0) {
-            try { savedImage = canvas.toDataURL('image/png'); } catch (e) { /* ignore */ }
+        canvas.width = 1920;
+        canvas.height = 1080;
+
+        let cssW, cssH;
+        if (rect.width / rect.height > ratio) {
+            cssH = rect.height;
+            cssW = rect.height * ratio;
+        } else {
+            cssW = rect.width;
+            cssH = rect.width / ratio;
         }
 
-        canvas.width = newW;
-        canvas.height = newH;
-        canvas.style.width = rect.width + 'px';
-        canvas.style.height = rect.height + 'px';
-        ctx.scale(dpr, dpr);
+        canvas.style.width = cssW + 'px';
+        canvas.style.height = cssH + 'px';
 
-        // ✅ FIX #2: Jangan reset history saat resize
-        // historyStack dan redoStack tetap utuh
-
-        // ✅ FIX #3: Restore gambar setelah resize
-        if (savedImage) {
-            const img = new Image();
-            img.onload = function () {
-                ctx.drawImage(img, 0, 0, rect.width, rect.height);
-            };
-            img.src = savedImage;
-        }
+        const scale = canvas.width / cssW;
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
     }
 
-    // ✅ FIX #4: Debounce resize agar tidak spam
     let resizeTimer = null;
     window.addEventListener('resize', () => {
         if (!screens.sketch.classList.contains('active')) return;
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            initCanvasSize(true); // true = preserve content
-        }, 200);
+        resizeTimer = setTimeout(initCanvasSize, 200);
     });
 
     function getCoordinates(e) {
@@ -876,44 +865,7 @@
         });
     });
 
-    document.querySelectorAll('.text-preset').forEach(item => {
-        item.addEventListener('click', (e) => {
-            const textToInject = e.target.getAttribute('data-text');
-            if (!textToInject) return; // ✅ FIX: guard empty text
-            saveState();
-            ctx.save();
-            ctx.globalAlpha = currentOpacity;
-            ctx.fillStyle = currentColor;
-            ctx.font = "italic 20px 'Georgia', serif";
-            ctx.textAlign = "center";
-            const lines = fragmentTextIntoLines(textToInject, (canvas.width / dpr) - 100);
-            let startY = (canvas.height / dpr) / 2 - ((lines.length - 1) * 16);
-            lines.forEach((line, i) => {
-                ctx.fillText(line, (canvas.width / dpr) / 2, startY + (i * 32));
-            });
-            ctx.restore();
-        });
-    });
 
-    function fragmentTextIntoLines(text, maxWidth) {
-        if (!text) return []; // ✅ FIX: guard
-        const words = text.split(" ");
-        if (words.length === 0) return [];
-        const lines = [];
-        let currentLine = words[0];
-        ctx.font = "italic 20px 'Georgia', serif";
-        for (let i = 1; i < words.length; i++) {
-            let width = ctx.measureText(currentLine + " " + words[i]).width;
-            if (width < maxWidth) {
-                currentLine += " " + words[i];
-            } else {
-                lines.push(currentLine);
-                currentLine = words[i];
-            }
-        }
-        lines.push(currentLine);
-        return lines;
-    }
 
     // =============================================
     // UNDO / REDO / CLEAR
@@ -939,16 +891,22 @@
     function loadBakeState(src) {
         let img = new Image();
         img.onload = function () {
-            ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-            ctx.drawImage(img, 0, 0, canvas.width / dpr, canvas.height / dpr);
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
         };
         img.src = src;
     }
 
     document.getElementById('btn-clear').addEventListener('click', () => {
         if (confirm('Reset isi kanvas?')) {
-            saveState(); // ✅ FIX: save sebelum clear agar bisa undo
-            ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+            saveState();
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
         }
     });
 
@@ -974,17 +932,17 @@
             const strokeColor = isDark ? '#fafafa' : '#18181b';
             exportCtx.strokeStyle = strokeColor;
             if (activeFrameStyle === 'f-fine-gallery') {
-                const offset = 24 * dpr;
-                exportCtx.lineWidth = 1 * dpr;
+                const offset = 24;
+                exportCtx.lineWidth = 1;
                 exportCtx.strokeRect(offset, offset, exportCanvas.width - (offset * 2), exportCanvas.height - (offset * 2));
-                exportCtx.strokeRect(offset + (4 * dpr), offset + (4 * dpr), exportCanvas.width - ((offset + 4) * 2), exportCanvas.height - ((offset + 4) * 2));
+                exportCtx.strokeRect(offset + 4, offset + 4, exportCanvas.width - ((offset + 4) * 2), exportCanvas.height - ((offset + 4) * 2));
             } else if (activeFrameStyle === 'f-minimal-line') {
-                const offset = 16 * dpr;
-                exportCtx.lineWidth = 1 * dpr;
+                const offset = 16;
+                exportCtx.lineWidth = 1;
                 exportCtx.strokeRect(offset, offset, exportCanvas.width - (offset * 2), exportCanvas.height - (offset * 2));
             } else if (activeFrameStyle === 'f-modern-botanical') {
-                const offset = 28 * dpr;
-                exportCtx.lineWidth = 1.5 * dpr;
+                const offset = 28;
+                exportCtx.lineWidth = 1.5;
                 exportCtx.strokeRect(offset, offset, exportCanvas.width - (offset * 2), exportCanvas.height - (offset * 2));
             }
         }
@@ -1015,7 +973,10 @@
         }
 
         document.getElementById('guest-name').value = "";
-        ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
         historyStack = [];
         redoStack = [];
         changeScreen('board');

@@ -173,11 +173,27 @@
         .top-action-bar .action-group { display: flex; gap: 6px; }
         .top-action-bar button { padding: 8px 12px; font-size: 0.75rem; border-radius: 8px; }
 
-        /* Responsive Mobile Burger Trigger */
-        .burger-menu-trigger {
-            display: none; background: var(--accent-color); color: var(--bg-color);
-            border: none; border-radius: 8px; width: 34px; height: 34px;
-            align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; padding: 0;
+        /* Mobile Menu Toggle — Standalone Floating Button (seperti index.html) */
+        #mobile-menu-toggle {
+            display: none;
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 20;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 12px;
+            width: 48px;
+            height: 48px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
 
         /* --- SCREEN 3: HIGH-END CONTEMPORARY GALLERY BOARD --- */
@@ -243,27 +259,8 @@
         .modal-img-frame { width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--border-color); background: #ffffff; display: block; }
         body.dark-theme .modal-img-frame { background: #141416; }
 
-        /* Mobile Sidebar Backdrop Darkener Layer */
         /* =============================================
-   MOBILE SIDEBAR BACKDROP — TANPA BLUR
-   ============================================= */
-.sidebar-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    /* ✅ Hapus backdrop-filter, pakai solid saja */
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 80;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-.sidebar-backdrop.active {
-    display: block;
-    opacity: 1;
-}
-
-/* =============================================
-   SIDEBAR BASE — Pisahkan blur agar bisa di-override mobile
+   SIDEBAR BASE
    ============================================= */
 .sidebar {
     background: var(--panel-bg);
@@ -313,7 +310,12 @@
         grid-template-columns: 1fr;
     }
 
-    /* ✅ Sidebar mobile: HAPUS backdrop-blur, pakai solid background */
+    /* ✅ Mobile Menu Toggle — muncul di HP */
+    #mobile-menu-toggle {
+        display: flex;
+    }
+
+    /* ✅ Sidebar: Slide-in dari kiri dengan pointer-events (seperti index.html) */
     .sidebar {
         position: fixed;
         top: 0;
@@ -323,14 +325,16 @@
         z-index: 90;
         border-radius: 0 20px 20px 0;
         border-left: none;
-        transform: translateX(-100%);
+        border-top: none;
+        border-bottom: none;
+        transform: translateX(-105%);
         opacity: 0;
-        /* OVERRIDE: solid background, no blur */
+        pointer-events: none;
         background: var(--bg-color);
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
-        /* Tambah shadow agar tetap terlihat "mengangkat" */
         box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+        padding-top: calc(20px + var(--safe-top));
     }
     body.dark-theme .sidebar {
         box-shadow: 4px 0 40px rgba(0, 0, 0, 0.5);
@@ -338,17 +342,16 @@
     .sidebar.mobile-open {
         transform: translateX(0);
         opacity: 1;
+        pointer-events: auto;
     }
 
-    /* ✅ Top bar: hapus blur juga */
+    /* ✅ Top bar: geser ke kanan, hapus blur */
     .top-action-bar {
+        left: 76px;
+        right: 12px;
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
         background: var(--bg-color);
-    }
-
-    .burger-menu-trigger {
-        display: flex;
     }
 
     .top-action-bar button {
@@ -369,8 +372,6 @@
     </style>
 </head>
 <body class="light-theme">
-
-    <div id="sidebar-overlay-backdrop" class="sidebar-backdrop"></div>
 
     <div id="screen-form" class="screen" style="justify-content: center; align-items: center;">
         <div class="glass-card">
@@ -393,6 +394,7 @@
     </div>
 
     <div id="screen-sketch" class="screen">
+        <button id="mobile-menu-toggle" title="Buka Menu">☰</button>
         <div class="workspace-layout">
             
             <div id="app-sidebar" class="sidebar">
@@ -448,15 +450,7 @@
                     </div>
                 </div>
 
-                <div class="section">
-                    <h3>Copywriting Ucapan Otomatis</h3>
-                    <div class="selector-box">
-                        <div class="selector-item text-preset" data-text="Happy Wedding! May your journey be filled with infinite love, understanding, and eternal joy.">✨ International Elegant Wishes</div>
-                        <div class="selector-item text-preset" data-text="Selamat Menempuh Hidup Baru. Semoga menjadi keluarga yang sakinah, mawaddah, dan warahmah.">💍 Doa Sakinah & Berkah</div>
-                        <div class="selector-item text-preset" data-text="May your love story be as beautiful and enduring as a work of timeless art. Congratulation!">🖤 True Contemporary Love</div>
-                        <div class="selector-item text-preset" data-text="Selamat Berbahagia! Turut merayakan bersatunya dua hati yang saling melengkapi ini.">🥂 Cheers to Love & Happiness</div>
-                    </div>
-                </div>
+
 
                 <div class="section">
                     <div class="action-row" style="display:flex; gap: 6px;">
@@ -468,8 +462,6 @@
 
             <div class="canvas-area">
                 <div class="top-action-bar">
-                    <button id="mobile-burger-btn" class="burger-menu-trigger">☰</button>
-                    
                     <div class="action-group">
                         <button id="btn-undo" class="btn-secondary">↶ <span class="btn-text-hide">Undo</span></button>
                         <button id="btn-redo" class="btn-secondary">↷ <span class="btn-text-hide">Redo</span></button>
@@ -543,10 +535,9 @@
     const container = document.getElementById('canvas-container');
     const frameLayer = document.getElementById('canvas-frame-layer');
 
-    // MOBILE SIDEBAR TRIGGERS
-    const mobileBurgerBtn = document.getElementById('mobile-burger-btn');
+    // MOBILE SIDEBAR TRIGGERS — seperti index.html
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
     const appSidebar = document.getElementById('app-sidebar');
-    const sidebarBackdrop = document.getElementById('sidebar-overlay-backdrop');
 
     // MODAL OBJECTS
     const lightboxModal = document.getElementById('wish-lightbox-modal');
@@ -566,26 +557,26 @@
     }
 
     // =============================================
-    // MOBILE SIDEBAR
+    // MOBILE SIDEBAR — seperti index.html
     // =============================================
     function openMobileSidebar() {
         appSidebar.classList.add('mobile-open');
-        sidebarBackdrop.classList.add('active');
+        mobileToggle.innerText = "✕";
     }
     function closeMobileSidebar() {
         appSidebar.classList.remove('mobile-open');
-        sidebarBackdrop.classList.remove('active');
+        mobileToggle.innerText = "☰";
     }
-    mobileBurgerBtn.addEventListener('click', (e) => {
+    mobileToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (appSidebar.classList.contains('mobile-open')) closeMobileSidebar();
-        else openMobileSidebar();
-    });
-    sidebarBackdrop.addEventListener('click', closeMobileSidebar);
-    appSidebar.addEventListener('click', (e) => {
-        if (e.target.classList.contains('selector-item') || e.target.classList.contains('style-btn')) {
-            if (window.innerWidth <= 960) closeMobileSidebar();
+        if (appSidebar.classList.contains('mobile-open')) {
+            closeMobileSidebar();
+        } else {
+            openMobileSidebar();
         }
+    });
+    appSidebar.addEventListener('click', (e) => {
+        e.stopPropagation();
     });
 
     // INTERACTIVE NAVIGATION
@@ -663,6 +654,11 @@
     }
 
     function startDrawing(e) {
+        // ✅ Tutup sidebar dulu jika terbuka di mobile, seperti index.html
+        if (window.innerWidth <= 960 && appSidebar.classList.contains('mobile-open')) {
+            closeMobileSidebar();
+            return;
+        }
         isDrawing = true;
         const coords = getCoordinates(e);
         points = [{ x: coords.x, y: coords.y }];
@@ -831,6 +827,8 @@
             e.target.classList.add('active');
             currentStyle = e.target.getAttribute('data-style');
             disableEraser();
+            // ✅ Tutup sidebar otomatis di mobile, seperti index.html
+            if (window.innerWidth <= 960) closeMobileSidebar();
         });
     });
 
@@ -860,6 +858,7 @@
         isEraser = true;
         btnErase.classList.add('active');
         btnDraw.classList.remove('active');
+        if (window.innerWidth <= 960) closeMobileSidebar();
     });
     btnDraw.addEventListener('click', disableEraser);
     function disableEraser() {
@@ -875,6 +874,7 @@
             activeFrameStyle = e.target.getAttribute('data-frame');
             frameLayer.className = "frame-overlay";
             if (activeFrameStyle !== 'none') frameLayer.classList.add(activeFrameStyle);
+            if (window.innerWidth <= 960) closeMobileSidebar();
         });
     });
 
